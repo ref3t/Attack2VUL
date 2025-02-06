@@ -5,6 +5,11 @@ ATT&CK2V is a tool designed to identify software vulnerabilities based on attack
 
 ATT&CK2V uses information from the MITRE repositories, such as **ATT&CK**, **CAPEC**, **CWE**, and **CVE**, to create a dataset of attacks and vulnerabilities. It also employs a sentence transformer model to compute semantic similarity between attack texts and vulnerability descriptions, producing a ranked list of relevant CVEs.
 
+Here’s the methodology diagram for ATT&CK2V:
+
+![Methodology Diagram](MethodologyAr.png)
+
+
 ## Data Description
 
 The VULDAT approach uses four datasets from the MITRE repositories, which are:
