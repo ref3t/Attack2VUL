@@ -22,8 +22,7 @@ The VULDAT approach uses four datasets from the MITRE repositories, which are:
 - **CVE**: A list of publicly known cybersecurity vulnerabilities and exposures, each with a unique identification number and a brief description. It provides a reference point for vulnerability information and facilitates information sharing among security communities.
 
 ### Data Mapping
-The mapping **M: A → C** establishes relationships between an attack **A** and a set of CVE reports **C**.  
-- **Explicit mappings** occur when a direct reference between an attack and a CVE exists in the repositories.  
+The mapping **M: A → C** explicit links between an attack **A** and a set of CVE reports **C**. The links occur when a direct reference between an attack and a CVE exists in the repositories.  
 
 
 
