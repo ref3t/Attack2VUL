@@ -7,7 +7,7 @@ ATT&CK2V uses information from the MITRE repositories, such as **ATT&CK**, **CAP
 
 Here’s the methodology diagram for ATT&CK2V:
 
-![Methodology Diagram](MethodologyAr.png)
+![Methodology Diagram](MethodologyAr.drawio.pdf)
 
 
 ## Data Description
