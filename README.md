@@ -46,6 +46,6 @@ Ensure the following libraries are installed:
 Here are some of the relevant papers related to this project:
 
 - [Cybersecurity Defenses: Exploration of CVE Types through Attack Descriptions](https://ieeexplore.ieee.org/abstract/document/10803317)
-- [A Comparison of Vulnerability Feature Extraction Methods from Textual Attack Patterns](https://link.springer.com/chapter/10.1007/978-3-031-46077-7_36)
+- [A Comparison of Vulnerability Feature Extraction Methods from Textual Attack Patterns](https://ieeexplore.ieee.org/abstract/document/10803510)
 
 
