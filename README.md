@@ -20,8 +20,6 @@ The VULDAT approach uses four datasets from the MITRE repositories, which are:
 ### Data Mapping
 The mapping **M: A → C** establishes relationships between an attack **A** and a set of CVE reports **C**.  
 - **Explicit mappings** occur when a direct reference between an attack and a CVE exists in the repositories.  
-- **Implicit mappings** are inferred using machine learning models that identify connections between attack descriptions and vulnerabilities.  
-- **Floating entries** represent attack descriptions that lack explicit CVE associations but can still be mapped through similarity analysis.  
 
 
 
