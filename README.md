@@ -1,7 +1,7 @@
 # ATT&CK2V
 
 ## Overview
-ATT&CK2V is a tool designed to identify software vulnerabilities based on attack descriptions. Given a textual attack description, it retrieves the most relevant vulnerabilities from the CVE (Common Vulnerabilities and Exposures) repository. The attack text can be sourced from MITRE repositories (ATT&CK, CAPEC, CWE) or security news articles. This tool helps cybersecurity professionals assess risks, investigate incidents, and strengthen defense mechanisms.
+ATT&CK2V is an approach designed to identify software vulnerabilities based on attack descriptions. Given a textual attack description, it retrieves the most relevant vulnerabilities from the CVE (Common Vulnerabilities and Exposures) repository. The attack text can be sourced from MITRE repositories (ATT&CK, CAPEC, CWE) or security news articles. This tool helps cybersecurity professionals assess risks, investigate incidents, and strengthen defense mechanisms.
 
 ATT&CK2V uses information from the MITRE repositories, such as **ATT&CK**, **CAPEC**, **CWE**, and **CVE**, to create a dataset of attacks and vulnerabilities. It also employs a sentence transformer model to compute semantic similarity between attack texts and vulnerability descriptions, producing a ranked list of relevant CVEs.
 
