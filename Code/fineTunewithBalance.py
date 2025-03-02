@@ -13,21 +13,7 @@ from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 import pandas as pd
 import random
 
-# # Define ContrastiveLoss
-# class ContrastiveLoss(torch.nn.Module):
-#     def __init__(self, margin=0.5):
-#         super(ContrastiveLoss, self).__init__()
-#         self.margin = margin
 
-#     def forward(self, attack_embeddings, cve_embeddings, labels):
-#         # Calculate cosine similarity
-#         cosine_sim = torch.nn.functional.cosine_similarity(attack_embeddings, cve_embeddings)
-        
-#         # Contrastive loss: minimize distance for positive pairs and maximize distance for negative pairs
-#         loss = torch.mean((1 - labels) * torch.pow(cosine_sim, 2) + 
-#                           labels * torch.pow(torch.clamp(self.margin - cosine_sim, min=0.0), 2))
-#         return loss
-# Load MPNet model
 model = SentenceTransformer('multi-qa-mpnet-base-dot-v1')  
 
 def readTechWithNegative():

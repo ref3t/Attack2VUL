@@ -77,6 +77,8 @@ train_loss = losses.CosineSimilarityLoss(model=model)
 # Set up evaluator
 evaluator = EmbeddingSimilarityEvaluator.from_input_examples(val_examples, name="val-evaluator")
 
+losses_functions = ["MultipleNegativesRankingLoss", "ContrastiveLoss", "BatchHardTripletLoss"]
+
 model.fit(
     train_objectives=[(train_dataloader, train_loss)],
     evaluator=evaluator,
