@@ -11,10 +11,9 @@ Our work aims to **bridge this gap** by using sentence transformer models to sem
 
 ## Key Contributions
 
-- 📄 **Dataset**: A curated dataset of cybersecurity news articles from sources like SecurityWeek, labeled with relevant CVEs (both manually and through automated methods).
-- 🧠 **Model**: Fine-tuned sentence transformer model (based on `all-mpnet-base-v2`) to compute semantic similarity between news articles and CVE descriptions.
-- 📊 **Evaluation**: Performance evaluation using precision, recall, and F1-score with both manual and oracle-based validation strategies.
-- 🧪 **Threshold Tuning**: Sensitivity analysis to select optimal cosine similarity threshold for classification.
+-  **Dataset**: A curated dataset of cybersecurity news articles from sources like SecurityWeek, labeled with relevant CVEs (both manually and through automated methods).
+-  **Evaluation**: Performance evaluation using precision, recall, and F1-score with both manual and oracle-based validation strategies.
+-  **Threshold Tuning**: Sensitivity analysis to select optimal cosine similarity threshold.
 
 ## Methodology
 
