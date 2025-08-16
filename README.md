@@ -21,10 +21,18 @@ The ATT&CK2VUL approach uses four datasets from the MITRE repositories, which ar
   
 - **CVE**: A list of publicly known cybersecurity vulnerabilities and exposures, each with a unique identification number and a brief description. It provides a reference point for vulnerability information and facilitates information sharing among security communities.
 
-### Data Mapping
+#### Data Mapping
 The mapping **M: A → C** explicit links between an attack **A** and a set of CVE reports **C**. The links occur when a direct reference between an attack and a CVE exists in the repositories.  
 
+The full dataset used in this project is available here:  [**VULDATDataSet**](https://figshare.com/articles/dataset/VULDATDataSet_xlsx/25828102?file=46347484)
+- Each row in the dataset represents a complete linkage across multiple MITRE repositories
 
+##### Example Row
+| Tactic ID | Technique ID | Procedure ID | CAPEC ID | CWE ID | CVE ID |
+|-----------|--------------|--------------|----------|--------|--------|
+| TA0009    | T1005        | C0015        | 37      | CWE-1258 | CVE-2021-33080 |
+| TA0009    | T1005        | C0017        | 37      | CWE-1258 | CVE-2022-31162 |
+| TA0009    | T1005        | C0017        | 37      | CWE-311  | CVE-2004-1852  |
 
 ### Instructions to Run ATT&CK2VUL
 
