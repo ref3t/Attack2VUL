@@ -1,9 +1,0 @@
-pandas
-torch
-sentence-transformers
-openpyxl
-datasets
-pyarrow
-pandas[all]
-transformers[torch]
-sklearn
