@@ -1,14 +1,13 @@
 # ATT&CK2VUL — Automate Linking of Attack Descriptions to CVEs
 
 ## Overview
-ATT&CK2VUL is an approach designed to identify vulnerabilities based on attack descriptions. Given a textual attack description, it retrieves the most relevant vulnerabilities from the CVE (Common Vulnerabilities and Exposures) repository. The attack text can be sourced from MITRE repositories (ATT&CK, CAPEC). This tool helps cybersecurity professionals assess risks, investigate incidents, and strengthen defense mechanisms.
+**ATT&CK2VUL** is an approach designed to identify vulnerabilities based on attack descriptions. Given a textual attack description, it retrieves the most relevant vulnerabilities from the CVE (Common Vulnerabilities and Exposures) repository. The attack text can be sourced from MITRE repositories (ATT&CK, CAPEC). This tool helps cybersecurity professionals assess risks, investigate incidents, and strengthen defense mechanisms.
 
-ATT&CK2VUL uses information from the MITRE repositories, such as **ATT&CK**, **CAPEC**, **CWE**, and **CVE**, to create a dataset of attacks and vulnerabilities. It also employs a sentence transformer model to compute semantic similarity between attack texts and vulnerability descriptions, producing a ranked list of relevant CVEs.
+**ATT&CK2VUL** uses information from the MITRE repositories, such as **ATT&CK**, **CAPEC**, **CWE**, and **CVE**, to create a dataset of attacks and vulnerabilities. It also employs a sentence transformer model to compute semantic similarity between attack texts and vulnerability descriptions, producing a ranked list of relevant CVEs.
 
 Here’s the methodology diagram for ATT&CK2VUL:
 ![Methodology Diagram](Methodology.JPG?raw=true)
 
-![Methodology Overview](Methodology2.JPG?raw=true)
 
 ## Data Description
 
@@ -27,7 +26,7 @@ The mapping **M: A → C** explicit links between an attack **A** and a set of C
 
 
 
-### Pre-Requirements & 🔧 Instructions to Run ATT&CK2VUL
+### Instructions to Run ATT&CK2VUL
 
 Ensure the following libraries are installed:
 
@@ -36,12 +35,10 @@ Ensure the following libraries are installed:
 - torch
 - sentence-transformers
 - openpyxl
-- scikit-learn
-- pandas[all]
 
-```bash
-pip install -r requirements.txt
-python main.py
+  ```bash
+  pip install -r requirements.txt
+  python main.py
 
 ## References
 
