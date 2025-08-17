@@ -40,25 +40,16 @@ def main():
             out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
             os.makedirs(out_dir, exist_ok=True)
          
-            model.fit(
-                train_objectives=[(train_dataloader, train_loss)],
-                evaluator=val_evaluator,
-                epochs=EPOCHS,
-                evaluation_steps=EVAL_STEPS,
-                warmup_steps=WARMUP_STEPS,
-                output_path=out_dir
-            )          
-            fine_tuned_model = SentenceTransformer(out_dir, device=device)
+            # model.fit(
+            #     train_objectives=[(train_dataloader, train_loss)],
+            #     evaluator=val_evaluator,
+            #     epochs=EPOCHS,
+            #     evaluation_steps=EVAL_STEPS,
+            #     warmup_steps=WARMUP_STEPS,
+            #     output_path=out_dir
+            # )          
+            # fine_tuned_model = SentenceTransformer(out_dir, device=device)
 
-        # for model_name in SENTENCE_TRANSFORMERS_MODELS:
-        #     print(f"Processing model: {model_name} with infodata: {variant}")
-
-        #     out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
-        #     trainer = SBERTTrainer(
-        #         model_name=model_name, output_dir=out_dir,
-        #         epochs=EPOCHS, eval_steps=EVAL_STEPS, warmup_steps=WARMUP_STEPS
-        #     )
-        #     fine_tuned_model = trainer.fit(train_examples, val_examples)
             # fine_tuned_model = SentenceTransformer (model_name, device=device)
             dataCVE = read_cve_corpus(CVE_CORPUS_XLSX)
             evaluator = Evaluator(fine_tuned_model, threshold=SIM_THRESHOLD)

@@ -28,7 +28,9 @@ WARMUP_STEPS = 100
 RESULTS_DIR = os.path.abspath("./Results")
 MODELS_DIR  = os.path.abspath("./models")
 
-CVE_CORPUS_XLSX = "./dataset/VULDATDataSetWithoutProcedures.xlsx"
+# CVE_CORPUS_XLSX = "./dataset/VULDATDataSetWithoutProcedures.xlsx"
+CVE_CORPUS_XLSX = "./dataset/VULDATDataSet.xlsx"
+
 
 DATA_VARIANTS = {
     
