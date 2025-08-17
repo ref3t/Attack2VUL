@@ -50,7 +50,9 @@ def main():
             # )          
             # fine_tuned_model = SentenceTransformer(out_dir, device=device)
 
-            fine_tuned_model = SentenceTransformer (model_name, device=device)
+            # fine_tuned_model = SentenceTransformer (model_name, device=device)
+
+            fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
             dataCVE = read_cve_corpus(CVE_CORPUS_XLSX)
             evaluator = Evaluator(fine_tuned_model, threshold=SIM_THRESHOLD)
             confusion = AttackLevelConfusion(threshold=SIM_THRESHOLD)
