@@ -2,7 +2,7 @@ import os
 
 # Models to fine-tune/evaluate
 SENTENCE_TRANSFORMERS_MODELS = [
-    # 'all-MiniLM-L6-v2',
+    'all-MiniLM-L6-v2',
     'multi-qa-mpnet-base-dot-v1',
     'paraphrase-multilingual-MiniLM-L12-v2',
     'multi-qa-MiniLM-L6-cos-v1',
@@ -33,8 +33,6 @@ CVE_CORPUS_XLSX = "./dataset/VULDATDataSet.xlsx"
 
 
 DATA_VARIANTS = {
-    
-    
     "Technique": {
         "train": 'dataset/attackInfo/Techniques/Tech_train_data_Balanced.xlsx',
         "val":   'dataset/attackInfo/Techniques/Tech_val_data_Balanced.xlsx',
