@@ -28,7 +28,7 @@ RESULTS_DIR = os.path.abspath("./Results")
 MODELS_DIR  = os.path.abspath("./models")
 
 # CVE_CORPUS_XLSX = "./dataset/VULDATDataSetWithoutProcedures.xlsx"
-CVE_CORPUS_XLSX = "./dataset/VULDATDataSet.xlsx"
+CVE_CORPUS_XLSX = "./dataset/VULDATDataSet2.xlsx"
 
 
 DATA_VARIANTS = {
@@ -51,25 +51,26 @@ DATA_VARIANTS = {
         "train": 'dataset/attackInfo/Procedures/Proc_train_data_Balanced.xlsx',
         "val":   'dataset/attackInfo/Procedures/Proc_val_data_Balanced.xlsx',
         "test":  'dataset/attackInfo/Procedures/Proc_test_data_Balanced.xlsx',
-    },
-    "TacticImbalanced": {
-        "train": 'dataset/attackInfo/Tactics/Tactic_train_data_Imbalanced.xlsx',
-        "val":   'dataset/attackInfo/Tactics/Tactic_val_data_Imbalanced.xlsx',
-        "test":  'dataset/attackInfo/Tactics/Tactic_test_data_ImBalanced.xlsx',
-    },
-    "ProcedureImbalanced": {
-        "train": 'dataset/attackInfo/Procedures/Proc_train_data_Imbalanced.xlsx',
-        "val":   'dataset/attackInfo/Procedures/Proc_val_data_Imbalanced.xlsx',
-        "test":  'dataset/attackInfo/Procedures/Proc_test_data_Imbalanced.xlsx',
-    },
-    "TechniqueImbalanced": {
-        "train": 'dataset/attackInfo/Techniques/Tech_train_data_ImBalanced.xlsx',
-        "val":   'dataset/attackInfo/Techniques/Tech_val_data_ImBalanced.xlsx',
-        "test":  'dataset/attackInfo/Techniques/Tech_test_data_ImBalanced.xlsx',
-    },
-    "CAPECImbalanced": {
-        "train": 'dataset/attackInfo/CAPECs/Capec_train_data_ImBalanced.xlsx',
-        "val":   'dataset/attackInfo/CAPECs/Capec_val_data_ImBalanced.xlsx',
-        "test":  'dataset/attackInfo/CAPECs/Capec_test_data_ImBalanced.xlsx',
-    },
+    }
+    # ,
+    # "TacticImbalanced": {
+    #     "train": 'dataset/attackInfo/Tactics/Tactic_train_data_Imbalanced.xlsx',
+    #     "val":   'dataset/attackInfo/Tactics/Tactic_val_data_Imbalanced.xlsx',
+    #     "test":  'dataset/attackInfo/Tactics/Tactic_test_data_ImBalanced.xlsx',
+    # },
+    # "ProcedureImbalanced": {
+    #     "train": 'dataset/attackInfo/Procedures/Proc_train_data_Imbalanced.xlsx',
+    #     "val":   'dataset/attackInfo/Procedures/Proc_val_data_Imbalanced.xlsx',
+    #     "test":  'dataset/attackInfo/Procedures/Proc_test_data_Imbalanced.xlsx',
+    # },
+    # "TechniqueImbalanced": {
+    #     "train": 'dataset/attackInfo/Techniques/Tech_train_data_ImBalanced.xlsx',
+    #     "val":   'dataset/attackInfo/Techniques/Tech_val_data_ImBalanced.xlsx',
+    #     "test":  'dataset/attackInfo/Techniques/Tech_test_data_ImBalanced.xlsx',
+    # },
+    # "CAPECImbalanced": {
+    #     "train": 'dataset/attackInfo/CAPECs/Capec_train_data_ImBalanced.xlsx',
+    #     "val":   'dataset/attackInfo/CAPECs/Capec_val_data_ImBalanced.xlsx',
+    #     "test":  'dataset/attackInfo/CAPECs/Capec_test_data_ImBalanced.xlsx',
+    # },
 }

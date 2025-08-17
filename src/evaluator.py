@@ -7,10 +7,11 @@ from .types import VulData
 from .metrics import AttackLevelConfusion
 
 class Evaluator:
-    def __init__(self, model, threshold: float ,device: str = "cpu"):
+    def __init__(self, model, model_name, threshold: float ,device: str = "cpu"):
         self.model = model
         self.threshold = threshold
         self.device = device
+        self.model_name = model_name
 
     def _encode_cve_corpus(self, dataCVE):
         descriptions   = dataCVE['CVEDescription'].values.tolist()
@@ -91,7 +92,7 @@ class Evaluator:
 
             # Record into confusion matrix
             confusion.add_attack_result(
-                model_name=self.model._first_module().__class__.__name__ if hasattr(self.model, "_first_module") else "model",
+                model_name=self.model._first_module().__class__.__name__ if len(self.model_name) == 0 else self.model_name,
                 tech_id=key,
                 vul_data_list=vul_data_list,
                 cves_attack=cves_attack,

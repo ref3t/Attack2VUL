@@ -54,7 +54,7 @@ def main():
 
             fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
             dataCVE = read_cve_corpus(CVE_CORPUS_XLSX)
-            evaluator = Evaluator(fine_tuned_model, threshold=SIM_THRESHOLD)
+            evaluator = Evaluator(fine_tuned_model,model_name, threshold=SIM_THRESHOLD)
             confusion = AttackLevelConfusion(threshold=SIM_THRESHOLD)
 
             evaluator.evaluate_variant(variant, test_groups, dataCVE, confusion)
