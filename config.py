@@ -3,19 +3,19 @@ import os
 # Models to fine-tune/evaluate
 SENTENCE_TRANSFORMERS_MODELS = [
     'multi-qa-mpnet-base-dot-v1',
-    # 'paraphrase-multilingual-MiniLM-L12-v2',
-    # 'multi-qa-MiniLM-L6-cos-v1',
-    # 'multi-qa-distilbert-cos-v1',
-    # 'all-MiniLM-L12-v2',
-    # 'all-distilroberta-v1',
-    # 'all-MiniLM-L6-v2',
-    # 'all-mpnet-base-v2',
-    # 'paraphrase-MiniLM-L6-v2',
-    # 'paraphrase-albert-small-v2',
-    # 'msmarco-bert-base-dot-v5',
-    # 'all-roberta-large-v1',
-    # 'gtr-t5-xxl',
-    # 'paraphrase-TinyBERT-L6-v2',
+    'paraphrase-multilingual-MiniLM-L12-v2',
+    'multi-qa-MiniLM-L6-cos-v1',
+    'multi-qa-distilbert-cos-v1',
+    'all-MiniLM-L12-v2',
+    'all-distilroberta-v1',
+    'all-MiniLM-L6-v2',
+    'all-mpnet-base-v2',
+    'paraphrase-MiniLM-L6-v2',
+    'paraphrase-albert-small-v2',
+    'msmarco-bert-base-dot-v5',
+    'all-roberta-large-v1',
+    'gtr-t5-xxl',
+    'paraphrase-TinyBERT-L6-v2'
 ]
 
 SIM_THRESHOLD = 0.58
@@ -74,3 +74,5 @@ DATA_VARIANTS = {
     #     "test":  'dataset/attackInfo/CAPECs/Capec_test_data_ImBalanced.xlsx',
     # },
 }
+
+LARGE = SENTENCE_TRANSFORMERS_MODELS[-2]

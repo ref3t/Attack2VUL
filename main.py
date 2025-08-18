@@ -6,7 +6,7 @@ from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 
 from config import (
     SENTENCE_TRANSFORMERS_MODELS, DATA_VARIANTS,
-    SIM_THRESHOLD, EPOCHS, EVAL_STEPS, WARMUP_STEPS,
+    SIM_THRESHOLD, EPOCHS, LARGE,EVAL_STEPS, WARMUP_STEPS,
     RESULTS_DIR, MODELS_DIR, CVE_CORPUS_XLSX
 )
 from src.utils import ensure_dirs, setup_logging, get_device
@@ -38,7 +38,6 @@ def main():
             print(f"Processing model: {model_name} with infodata: {variant}")
             model = SentenceTransformer(model_name, device=device)
             train_loss = losses.CosineSimilarityLoss(model=model)
-
             out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
             os.makedirs(out_dir, exist_ok=True)
 
