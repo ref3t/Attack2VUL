@@ -13,6 +13,8 @@ from src.utils import ensure_dirs, setup_logging, get_device
 from src.data_io import read_attack_pairs, to_input_examples, read_test_groups, read_cve_corpus
 from src.evaluator import Evaluator
 from src.metrics import AttackLevelConfusion
+from src.trainer import Trainer
+
 
 def main():
     setup_logging()
@@ -39,7 +41,15 @@ def main():
 
             out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
             os.makedirs(out_dir, exist_ok=True)
-         
+
+            out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
+            trainer = Trainer(
+                model_name=model_name, output_dir=out_dir,
+                epochs=EPOCHS, eval_steps=EVAL_STEPS, warmup_steps=WARMUP_STEPS
+            )
+            fine_tuned_model = trainer.fit(train_examples, val_examples)
+
+
             # model.fit(
             #     train_objectives=[(train_dataloader, train_loss)],
             #     evaluator=val_evaluator,
@@ -52,7 +62,8 @@ def main():
 
             # fine_tuned_model = SentenceTransformer (model_name, device=device)
 
-            fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
+
+            # fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
             dataCVE = read_cve_corpus(CVE_CORPUS_XLSX)
             evaluator = Evaluator(fine_tuned_model,model_name, threshold=SIM_THRESHOLD)
             confusion = AttackLevelConfusion(threshold=SIM_THRESHOLD)
@@ -67,7 +78,7 @@ def main():
 
             confusion.df_main.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Main_{variant}.xlsx"), index=False)
             confusion.df_details.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Details_{variant}.xlsx"), index=False)
-            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, "AllModelsNFineTuned_{variant}.xlsx"), index=False)
+            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, f"AllModelsNFineTuned_{variant}.xlsx"), index=False)
 
     dataframeResults.to_excel(os.path.join(RESULTS_DIR, "Summary_PRF.xlsx"), index=False)
     print("Done.")
