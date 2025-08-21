@@ -40,7 +40,7 @@ class Trainer:
             epochs=self.epochs,
             evaluation_steps=self.eval_steps,
             warmup_steps=self.warmup_steps,
-            output_path=self.output_dir,
             use_amp=self.use_amp,
         )
-        return SentenceTransformer(self.output_dir, device=self.device)
+        return model
+        #return SentenceTransformer(self.output_dir, device=self.device)
