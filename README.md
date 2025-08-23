@@ -24,7 +24,7 @@ The ATT&CK2VUL approach uses four datasets from the MITRE repositories, which ar
 #### Data Mapping
 The mapping **M: A → C** explicit links between an attack **A** and a set of CVE reports **C**. The links occur when a direct reference between an attack and a CVE exists in the repositories.  
 
-The full dataset used in this project is available here:  [**VULDATDataSet**](https://figshare.com/articles/dataset/VULDATDataSet_xlsx/25828102?file=46347484)
+The full dataset used in this project is available here:  [**VULDATDataSet**](https://figshare.com/articles/dataset/VULDATDataSet_xlsx/25828102?file=46347484) or Under dataset folder "VULDATDataSet.xlsx"
 - Each row in the dataset represents a complete linkage across multiple MITRE repositories
 
 ##### Example Row
@@ -46,7 +46,7 @@ Ensure the following libraries are installed:
 
   ```bash
   pip install -r requirements.txt
-  python main.py
+  python main.py #We will have for each model files for each attack type that contain all information
 
 ## References
 
