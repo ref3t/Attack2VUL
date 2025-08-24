@@ -11,7 +11,7 @@ from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 from sentence_transformers import LoggingHandler
 from sklearn.metrics.pairwise import cosine_similarity
 
-from vulDataClass import VulData
+from src2.vulDataClass import VulData
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(message)s',
