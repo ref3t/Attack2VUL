@@ -243,7 +243,7 @@ informationData = [
     "TacticImbalanced", "TechniqueImbalanced", "ProcedureImbalanced", "CAPECImbalanced"
 ]
 informationData = [
-    "Procedure", "CAPEC"]
+    "Technique","Tactic", "Procedure", "CAPEC"]
 dataframeResults = pd.DataFrame(columns=['Data','Model','precision','Recall','F1'])
 dataframeResultsForallModels = pd.DataFrame(columns=['LintersectM','L_M','M','M_L','L_Sum','Jaccard'])
 
@@ -479,6 +479,6 @@ for infoData in informationData:
             )
 
         print(model_name)
-        df.to_excel(f"Results/Results{model_name}_Main_{infoData}.xlsx", index=False)
-        dfRes.to_excel(f"Results/Results{model_name}_Details{infoData}.xlsx", index=False)
-        dataframeResultsForallModels.to_excel(f"Results/AllModelsNFineTuned{infoData}.xlsx", index=False)
+        df.to_excel(f"Results/R2/Results{model_name}_Main_{infoData}.xlsx", index=False)
+        dfRes.to_excel(f"Results/R2/Results{model_name}_Details{infoData}.xlsx", index=False)
+        dataframeResultsForallModels.to_excel(f"Results/R2/AllModelsNFineTuned{infoData}.xlsx", index=False)

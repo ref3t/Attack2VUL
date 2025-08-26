@@ -75,9 +75,9 @@ def main():
                 'precision': precision, 'Recall': recall, 'F1': f1
             }])], ignore_index=True)
 
-            confusion.df_main.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Main_{variant}.xlsx"), index=False)
-            confusion.df_details.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Details_{variant}.xlsx"), index=False)
-            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, f"AllModelsNFineTuned_{variant}.xlsx"), index=False)
+            confusion.df_main.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Main_{variant}2.xlsx"), index=False)
+            confusion.df_details.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Details_{variant}2.xlsx"), index=False)
+            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, f"AllModelsNFineTuned_{variant}2.xlsx"), index=False)
 
     dataframeResults.to_excel(os.path.join(RESULTS_DIR, "Summary_PRF.xlsx"), index=False)
     print("Done.")
