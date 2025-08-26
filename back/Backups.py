@@ -33,8 +33,8 @@ SentenceTransformersModels = [
     'msmarco-bert-base-dot-v5',
     'all-roberta-large-v1',
     #'gtr-t5-xxl',
-    'paraphrase-TinyBERT-L6-v2',
-    'gtr-t5-xxl'
+    'paraphrase-TinyBERT-L6-v2'
+    #'gtr-t5-xxl'
 ]
 
 df = pd.DataFrame(columns=['Threshold','TechID','TP','FP','FN','TN','AttackTP','AttackTN','AttackFP','AttackFN','CountMapping'])
@@ -229,7 +229,7 @@ def read_excel_file(file_path, attack_info):
             idv = row['TacticId']
         elif attack_info == 'Procedure' or attack_info == 'ProcedureImbalanced':
             attack_desc = row['ProcedureDescription']
-            idv = row['ProcedureID']
+            idv = row['ProceduresID']
         else:
             attack_desc = row['TechniqueDescription']
             idv = row['TechniqueID']
@@ -243,7 +243,7 @@ informationData = [
     "TacticImbalanced", "TechniqueImbalanced", "ProcedureImbalanced", "CAPECImbalanced"
 ]
 informationData = [
-    "Technique","Tactic", "Procedure", "CAPEC"]
+    "Procedure", "CAPEC"]
 dataframeResults = pd.DataFrame(columns=['Data','Model','precision','Recall','F1'])
 dataframeResultsForallModels = pd.DataFrame(columns=['LintersectM','L_M','M','M_L','L_Sum','Jaccard'])
 
@@ -303,10 +303,10 @@ for infoData in informationData:
         elif attack_info == 'Tactic' or attack_info == 'TacticImbalanced':
             attack_col = 'TacticDescription'
             id_col = 'TacticId'
-            attack_name = ''
+            attack_name = 'TacticDescription'
         elif attack_info == 'Procedure' or attack_info == 'ProcedureImbalanced':
             attack_col = 'ProcedureDescription'
-            id_col = 'ProcedureID'
+            id_col = 'ProceduresID'
             attack_name = 'ProcedureName'
         else:
             attack_col = 'TechniqueDescription'
