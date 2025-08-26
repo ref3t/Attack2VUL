@@ -72,8 +72,8 @@ class Evaluator:
                 trainAndTest = dataCVE[dataCVE['TacticId'] == key]
                 notAttack = dataCVE[dataCVE['TacticId'] != key]
             elif variant in ("Procedures", "ProceduresImBalanced"):
-                trainAndTest = dataCVE[dataCVE['ProceduresID'] == key]
-                notAttack = dataCVE[dataCVE['ProceduresID'] != key]
+                trainAndTest = dataCVE[dataCVE['ProcedureID'] == key]
+                notAttack = dataCVE[dataCVE['ProcedureID'] != key]
             else:  
                 k = key.split(".")[0] if "." in key else key
                 trainAndTest = dataCVE[dataCVE['TechniqueID'].str.startswith(k)]
