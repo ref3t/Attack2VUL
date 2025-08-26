@@ -229,7 +229,7 @@ def read_excel_file(file_path, attack_info):
             idv = row['TacticId']
         elif attack_info == 'Procedure' or attack_info == 'ProcedureImbalanced':
             attack_desc = row['ProcedureDescription']
-            idv = row['ProceduresID']
+            idv = row['ProcedureID']
         else:
             attack_desc = row['TechniqueDescription']
             idv = row['TechniqueID']
@@ -299,15 +299,15 @@ for infoData in informationData:
         if attack_info == 'CAPEC' or attack_info == 'CAPECImbalanced':
             attack_col = 'CAPECDescription'
             id_col = 'CAPECID'
-            attack_name = 'CAPECName'
+            attack_name = 'CAPECID'
         elif attack_info == 'Tactic' or attack_info == 'TacticImbalanced':
             attack_col = 'TacticDescription'
             id_col = 'TacticId'
             attack_name = 'TacticDescription'
         elif attack_info == 'Procedure' or attack_info == 'ProcedureImbalanced':
             attack_col = 'ProcedureDescription'
-            id_col = 'ProceduresID'
-            attack_name = 'ProcedureName'
+            id_col = 'ProcedureID'
+            attack_name = 'ProcedureID'
         else:
             attack_col = 'TechniqueDescription'
             id_col = 'TechniqueID'
@@ -412,7 +412,7 @@ for infoData in informationData:
             elif infoData == "Tactic" or infoData == "TacticImBalanced":
                 trainAndTestSet = dataCVE[dataCVE['TacticId'] == key]
             elif infoData == "Procedures" or infoData == "ProceduresImBalanced":
-                trainAndTestSet = dataCVE[dataCVE['ProceduresID'] == key]
+                trainAndTestSet = dataCVE[dataCVE['ProcedureID'] == key]
             else:
                 if "." in key:
                     key = key.split(".")[0]
@@ -427,7 +427,7 @@ for infoData in informationData:
             elif infoData == "Tactic" or infoData == "TacticImBalanced":
                 CvesNotAttack = dataCVE[dataCVE['TacticId'] != key]
             elif infoData == "Procedures" or infoData == "ProceduresImBalanced":
-                CvesNotAttack = dataCVE[dataCVE['ProceduresID'] != key]
+                CvesNotAttack = dataCVE[dataCVE['ProcedureID'] != key]
             else:
                 if "." in key:
                     key = key.split(".")[0]
