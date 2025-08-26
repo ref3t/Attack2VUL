@@ -59,7 +59,7 @@ def main():
             # )          
             # fine_tuned_model = SentenceTransformer(out_dir, device=device)
 
-            # fine_tuned_model = SentenceTransformer (model_name, device=device)
+            fine_tuned_model = SentenceTransformer (model_name, device=device)
 
 
             # fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
