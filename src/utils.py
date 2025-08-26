@@ -13,10 +13,7 @@ def setup_logging():
         handlers=[LoggingHandler()]
     )
 def get_device() -> str:
-    """Return 'cuda:N' if CUDA is available, else 'mps' on Apple, else 'cpu'."""
+    """Return 'cuda:N' if CUDA is available, else 'cpu'."""
     if torch.cuda.is_available():
         return f'cuda:{torch.cuda.current_device()}'
-    # Apple Silicon (PyTorch MPS)
-    if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-        return 'mps'
     return 'cpu'

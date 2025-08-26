@@ -6,13 +6,15 @@ from sentence_transformers.evaluation import EmbeddingSimilarityEvaluator
 
 from config import (
     SENTENCE_TRANSFORMERS_MODELS, DATA_VARIANTS,
-    SIM_THRESHOLD, EPOCHS, EVAL_STEPS, WARMUP_STEPS,
+    SIM_THRESHOLD, EPOCHS, LARGE,EVAL_STEPS, WARMUP_STEPS,
     RESULTS_DIR, MODELS_DIR, CVE_CORPUS_XLSX
 )
 from src.utils import ensure_dirs, setup_logging, get_device
 from src.data_io import read_attack_pairs, to_input_examples, read_test_groups, read_cve_corpus
 from src.evaluator import Evaluator
 from src.metrics import AttackLevelConfusion
+from src.trainer import Trainer
+
 
 def main():
     setup_logging()
@@ -36,23 +38,33 @@ def main():
             print(f"Processing model: {model_name} with infodata: {variant}")
             model = SentenceTransformer(model_name, device=device)
             train_loss = losses.CosineSimilarityLoss(model=model)
-
             out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
             os.makedirs(out_dir, exist_ok=True)
-         
-            model.fit(
-                train_objectives=[(train_dataloader, train_loss)],
-                evaluator=val_evaluator,
-                epochs=EPOCHS,
-                evaluation_steps=EVAL_STEPS,
-                warmup_steps=WARMUP_STEPS,
-                output_path=out_dir
-            )          
-            fine_tuned_model = SentenceTransformer(out_dir, device=device)
 
-            # fine_tuned_model = SentenceTransformer (model_name, device=device)
+            out_dir = os.path.join(MODELS_DIR, f"fine_tuned_{model_name.replace('/', '_')}_{variant}")
+            trainer = Trainer(
+                model_name=model_name, output_dir=out_dir,
+                epochs=EPOCHS, eval_steps=EVAL_STEPS, warmup_steps=WARMUP_STEPS
+            )
+            fine_tuned_model = trainer.fit(train_examples, val_examples)
+
+
+            # model.fit(
+            #     train_objectives=[(train_dataloader, train_loss)],
+            #     evaluator=val_evaluator,
+            #     epochs=EPOCHS,
+            #     evaluation_steps=EVAL_STEPS,
+            #     warmup_steps=WARMUP_STEPS,
+            #     output_path=out_dir
+            # )          
+            # fine_tuned_model = SentenceTransformer(out_dir, device=device)
+
+            fine_tuned_model = SentenceTransformer (model_name, device=device)
+
+
+            # fine_tuned_model = SentenceTransformer ("./models/fine_tuned_multi-qa-mpnet-base-dot-v1_TechniqueFFF", device=device)
             dataCVE = read_cve_corpus(CVE_CORPUS_XLSX)
-            evaluator = Evaluator(fine_tuned_model, threshold=SIM_THRESHOLD)
+            evaluator = Evaluator(fine_tuned_model,model_name, threshold=SIM_THRESHOLD)
             confusion = AttackLevelConfusion(threshold=SIM_THRESHOLD)
 
             evaluator.evaluate_variant(variant, test_groups, dataCVE, confusion)
@@ -63,9 +75,9 @@ def main():
                 'precision': precision, 'Recall': recall, 'F1': f1
             }])], ignore_index=True)
 
-            confusion.df_main.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Main.xlsx"), index=False)
-            confusion.df_details.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Details.xlsx"), index=False)
-            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, "AllModelsNFineTuned.xlsx"), index=False)
+            confusion.df_main.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Main_{variant}.xlsx"), index=False)
+            confusion.df_details.to_excel(os.path.join(RESULTS_DIR, f"Results{model_name}_Details_{variant}.xlsx"), index=False)
+            confusion.df_jaccard_all_models.to_excel(os.path.join(RESULTS_DIR, f"AllModelsNFineTuned_{variant}.xlsx"), index=False)
 
     dataframeResults.to_excel(os.path.join(RESULTS_DIR, "Summary_PRF.xlsx"), index=False)
     print("Done.")
