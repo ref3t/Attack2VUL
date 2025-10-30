@@ -42,5 +42,5 @@ class Trainer:
             warmup_steps=self.warmup_steps,
             use_amp=self.use_amp,
         )
-        return model
+        #return model
         return SentenceTransformer(self.output_dir, device=self.device)
