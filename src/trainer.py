@@ -43,4 +43,4 @@ class Trainer:
             use_amp=self.use_amp,
         )
         return model
-        #return SentenceTransformer(self.output_dir, device=self.device)
+        return SentenceTransformer(self.output_dir, device=self.device)
