@@ -61,6 +61,36 @@ For a smaller test run:
 python main_no_finetune.py --models multi-qa-mpnet-base-dot-v1 --variants Technique
 ```
 
+To run the same no-fine-tune pipeline with RAG reranking and manual-validation output:
+
+```bash
+python main_no_finetune_rag.py --models multi-qa-mpnet-base-dot-v1 --variants Technique
+```
+
+With local Ollama:
+
+```bash
+ollama serve
+ollama pull llama3.1:8b
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --base-url http://localhost:11434/v1/chat/completions \
+  --llm-model llama3.1:8b
+```
+
+With a vLLM server:
+
+```bash
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --base-url http://localhost:8000/v1/chat/completions \
+  --llm-model meta-llama/Llama-3.1-8B-Instruct
+```
+
+The RAG runner writes candidate files, baseline top-k metrics, RAG metrics, comparison tables, threshold-based no-fine-tune results, and manual-validation candidate CSVs to `Results_NoFineTune_RAG/`.
+
 ## References
 
 Here are some of the relevant papers related to this project:

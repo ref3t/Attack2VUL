@@ -6,6 +6,8 @@ __pycache__/
 *.py[cod]
 
 VULDAT-RAG/outputs/
+Results_NoFineTune/
+Results_NoFineTune_RAG/
 
 ~$*
 *.tmp
