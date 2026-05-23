@@ -96,6 +96,13 @@ Results_NoFineTune_RAG/Performance_Before_RAG.csv
 Results_NoFineTune_RAG/Performance_After_RAG.csv
 ```
 
+The summary PRF files use the same format as the no-fine-tune threshold summary:
+
+```text
+Results_NoFineTune_RAG/Summary_PRF_Before_RAG.xlsx
+Results_NoFineTune_RAG/Summary_PRF_After_RAG.xlsx
+```
+
 The default threshold is `0.58`. To change it:
 
 ```bash

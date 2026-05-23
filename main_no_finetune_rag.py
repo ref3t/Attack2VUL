@@ -160,6 +160,29 @@ def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, r
     return before_df, after_df
 
 
+def summary_prf_from_attack_metrics(df, variant, model_name):
+    has_prediction = df["prediction_count"] > 0
+    has_truth = df["truth_count"] > 0
+    tp = int((has_prediction & has_truth).sum())
+    fp = int((has_prediction & ~has_truth).sum())
+    fn = int((~has_prediction & has_truth).sum())
+    if (tp + fp) == 0 or (tp + fn) == 0:
+        precision = tp
+        recall = fp
+        f1 = fn
+    else:
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
+    return {
+        "Data": variant,
+        "Model": model_name,
+        "precision": precision,
+        "Recall": recall,
+        "F1": f1,
+    }
+
+
 def run_variant_model(args, variant, model_name, data_cve, device):
     model_file = safe_name(model_name)
     test_groups = read_test_groups(DATA_VARIANTS[variant]["test"], variant)
@@ -228,7 +251,7 @@ def run_variant_model(args, variant, model_name, data_cve, device):
     }
 
     if args.skip_rag:
-        return threshold_summary, None, None
+        return threshold_summary, None, None, None
 
     rag_path = Path(args.results_dir) / f"RAG_Predictions_{model_file}_{variant}.jsonl"
     run_rag(
@@ -244,7 +267,8 @@ def run_variant_model(args, variant, model_name, data_cve, device):
     before_df, after_df = evaluate_candidate_files(args.results_dir, model_file, variant, candidate_path, rag_path)
     before_df.insert(0, "model", model_name)
     after_df.insert(0, "model", model_name)
-    return threshold_summary, before_df, after_df
+    rag_summary = summary_prf_from_attack_metrics(after_df, variant, model_name)
+    return threshold_summary, rag_summary, before_df, after_df
 
 
 def main():
@@ -257,6 +281,7 @@ def main():
 
     data_cve = read_cve_corpus(CVE_CORPUS_XLSX)
     threshold_rows = []
+    rag_summary_rows = []
     before_rag_frames = []
     after_rag_frames = []
 
@@ -265,8 +290,10 @@ def main():
             raise ValueError(f"Unknown variant: {variant}")
         for model_name in args.models:
             print(f"Processing model: {model_name} with infodata: {variant}")
-            threshold_summary, before_df, after_df = run_variant_model(args, variant, model_name, data_cve, device)
+            threshold_summary, rag_summary, before_df, after_df = run_variant_model(args, variant, model_name, data_cve, device)
             threshold_rows.append(threshold_summary)
+            if rag_summary is not None:
+                rag_summary_rows.append(rag_summary)
             if before_df is not None:
                 before_rag_frames.append(before_df)
             if after_df is not None:
@@ -276,6 +303,16 @@ def main():
     summary_path = Path(args.results_dir) / "Summary_PRF_NoFineTuneThreshold.xlsx"
     summary.to_excel(summary_path, index=False)
     print(f"Wrote {summary_path}")
+
+    before_summary_path = Path(args.results_dir) / "Summary_PRF_Before_RAG.xlsx"
+    summary.to_excel(before_summary_path, index=False)
+    print(f"Wrote {before_summary_path}")
+
+    if rag_summary_rows:
+        rag_summary = pd.DataFrame(rag_summary_rows)
+        rag_summary_path = Path(args.results_dir) / "Summary_PRF_After_RAG.xlsx"
+        rag_summary.to_excel(rag_summary_path, index=False)
+        print(f"Wrote {rag_summary_path}")
 
     if before_rag_frames:
         before_path = Path(args.results_dir) / "Performance_Before_RAG.csv"
