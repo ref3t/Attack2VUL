@@ -1,0 +1,12 @@
+pandas
+numpy
+torch
+sentence-transformers
+openpyxl
+scikit-learn
+requests
+ollama
+tqdm
+matplotlib
+seaborn
+scipy
