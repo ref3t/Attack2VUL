@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,27 @@ Return only valid JSON in this exact shape:
   {{"cve_id": "CVE-YYYY-NNNN", "decision": "not_linked"}}
 ]
 """
+
+
+def split_model_spec(model: str) -> tuple[str, str]:
+    known = {
+        "openai",
+        "anthropic",
+        "gemini",
+        "groq",
+        "openrouter",
+        "huggingface",
+        "mistral",
+        "ollama",
+        "lmstudio",
+        "vllm",
+        "openai-compatible",
+    }
+    if ":" in model:
+        prefix, name = model.split(":", 1)
+        if prefix in known:
+            return prefix, name
+    return "openai-compatible", model
 
 
 def render_prompt(record: dict) -> str:
@@ -132,6 +154,86 @@ def query_openai_compatible(
     return body["choices"][0]["message"]["content"]
 
 
+def query_anthropic(
+    model: str,
+    prompt: str,
+    temperature: float = 0.0,
+    top_p: float = 1.0,
+    max_tokens: int = 1024,
+    api_key: str | None = None,
+    base_url: str = "https://api.anthropic.com/v1/messages",
+) -> str:
+    key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise RuntimeError("ANTHROPIC_API_KEY is required for Anthropic models.")
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+    }
+    payload = {
+        "model": model,
+        "system": SYSTEM_PROMPT,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": temperature,
+        "top_p": top_p,
+        "max_tokens": max_tokens,
+    }
+    response = requests.post(base_url, headers=headers, json=payload, timeout=180)
+    try:
+        response.raise_for_status()
+    except HTTPError as exc:
+        body = response.text.strip()
+        if len(body) > 2000:
+            body = body[:2000] + "..."
+        raise RuntimeError(f"Anthropic endpoint returned HTTP {response.status_code}: {body}") from exc
+    body = response.json()
+    parts = []
+    for item in body.get("content", []):
+        if item.get("type") == "text":
+            parts.append(item.get("text", ""))
+    return "\n".join(parts)
+
+
+def query_llm(
+    base_url: str,
+    model: str,
+    prompt: str,
+    temperature: float = 0.0,
+    top_p: float = 1.0,
+    max_tokens: int = 1024,
+    api_key: str | None = None,
+) -> str:
+    provider, model_name = split_model_spec(model)
+    if provider == "anthropic":
+        return query_anthropic(model_name, prompt, temperature, top_p, max_tokens, api_key)
+
+    provider_configs = {
+        "openai": ("https://api.openai.com/v1/chat/completions", "OPENAI_API_KEY", True),
+        "gemini": ("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "GEMINI_API_KEY", True),
+        "groq": ("https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY", True),
+        "openrouter": ("https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", True),
+        "huggingface": ("https://router.huggingface.co/v1/chat/completions", "HF_TOKEN", True),
+        "mistral": ("https://api.mistral.ai/v1/chat/completions", "MISTRAL_API_KEY", True),
+        "ollama": ("http://localhost:11434/v1/chat/completions", None, False),
+        "lmstudio": ("http://localhost:1234/v1/chat/completions", None, False),
+        "vllm": ("http://localhost:8000/v1/chat/completions", None, False),
+    }
+
+    if provider in provider_configs:
+        endpoint, env_name, needs_key = provider_configs[provider]
+        key = api_key
+        if env_name:
+            key = key or os.environ.get(env_name)
+            if env_name == "HF_TOKEN":
+                key = key or os.environ.get("HUGGINGFACE_HUB_TOKEN")
+        if needs_key and not key:
+            raise RuntimeError(f"{env_name} is required for {provider} models.")
+        return query_openai_compatible(endpoint, model_name, prompt, temperature, top_p, max_tokens, key)
+
+    return query_openai_compatible(base_url, model_name, prompt, temperature, top_p, max_tokens, api_key)
+
+
 def run_rag(
     candidates_path: Path,
     output_path: Path,
@@ -162,12 +264,12 @@ def run_rag(
             done.add(key)
             write_jsonl(output_path, outputs)
             continue
-        content = query_openai_compatible(base_url, model, prompt, temperature, top_p, max_tokens, api_key)
+        content = query_llm(base_url, model, prompt, temperature, top_p, max_tokens, api_key)
         try:
             decisions = _normalize_decisions(_extract_json_array(content), candidate_ids)
         except Exception as exc:
             retry_prompt = prompt + f"\n\nYour previous response could not be parsed: {exc}. Return only the JSON array."
-            content = query_openai_compatible(base_url, model, retry_prompt, temperature, top_p, max_tokens, api_key)
+            content = query_llm(base_url, model, retry_prompt, temperature, top_p, max_tokens, api_key)
             try:
                 decisions = _normalize_decisions(_extract_json_array(content), candidate_ids)
             except Exception as retry_exc:

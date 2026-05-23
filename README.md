@@ -79,6 +79,79 @@ python main_no_finetune_rag.py \
   --llm-model llama3.1:8b
 ```
 
+To compare multiple LLMs in one run, pass more than one model name:
+
+```bash
+ollama pull llama3.1:8b
+ollama pull llama3.2:3b
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --base-url http://localhost:11434/v1/chat/completions \
+  --llm-model llama3.1:8b llama3.2:3b
+```
+
+You can also compare OpenAI and Claude models. Use the provider prefix in `--llm-model`:
+
+```bash
+export OPENAI_API_KEY=your_openai_key
+export ANTHROPIC_API_KEY=your_anthropic_key
+
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --llm-model openai:gpt-4o-mini anthropic:claude-3-5-sonnet-latest
+```
+
+You can mix local and API models in the same command:
+
+```bash
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --base-url http://localhost:11434/v1/chat/completions \
+  --llm-model ollama:llama3.1:8b openai:gpt-4o-mini anthropic:claude-3-5-sonnet-latest
+```
+
+Free-tier providers still require a free API key. Use the provider prefix and set the matching environment variable:
+
+```bash
+export GEMINI_API_KEY=your_key
+export GROQ_API_KEY=your_key
+export OPENROUTER_API_KEY=your_key
+export HF_TOKEN=your_key
+export MISTRAL_API_KEY=your_key
+
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --llm-model \
+    gemini:gemini-2.5-flash \
+    groq:MODEL_ID_FROM_GROQ \
+    openrouter:MODEL_ID_FROM_OPENROUTER \
+    huggingface:MODEL_ID_FROM_HUGGINGFACE \
+    mistral:MODEL_ID_FROM_MISTRAL
+```
+
+For completely local, no-key testing:
+
+```bash
+ollama pull llama3.1:8b
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --llm-model ollama:llama3.1:8b
+```
+
+LM Studio also works if its local OpenAI-compatible server is running on port `1234`:
+
+```bash
+python main_no_finetune_rag.py \
+  --models multi-qa-mpnet-base-dot-v1 \
+  --variants Technique \
+  --llm-model lmstudio:local-model
+```
+
 With a vLLM server:
 
 ```bash
@@ -101,6 +174,8 @@ The summary PRF files use the same format as the no-fine-tune threshold summary:
 ```text
 Results_NoFineTune_RAG/Summary_PRF_Before_RAG.xlsx
 Results_NoFineTune_RAG/Summary_PRF_After_RAG.xlsx
+Results_NoFineTune_RAG/Summary_PRF_After_RAG_All_LLMs.xlsx
+Results_NoFineTune_RAG/LLM_RAG_Comparison.csv
 ```
 
 The default threshold is `0.58`. To change it:

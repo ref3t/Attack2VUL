@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument("--variants", nargs="+", default=list(DATA_VARIANTS.keys()))
     parser.add_argument("--threshold", type=float, default=SIM_THRESHOLD)
     parser.add_argument("--base-url", default="http://localhost:11434/v1/chat/completions")
-    parser.add_argument("--llm-model", default="llama3.1:8b")
+    parser.add_argument("--llm-model", nargs="+", default=["llama3.1:8b"])
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--top-p", type=float, default=1.0)
     parser.add_argument("--max-tokens", type=int, default=1024)
@@ -142,14 +142,14 @@ def write_candidate_file(path, records):
     print(f"Wrote {path}")
 
 
-def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, rag_path):
+def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, rag_path, llm_file):
     baseline_metrics = Path(results_dir) / f"Metrics_BaselineThreshold_{model_file}_{variant}.csv"
-    rag_metrics = Path(results_dir) / f"Metrics_RAG_{model_file}_{variant}.csv"
-    comparison_path = Path(results_dir) / f"Comparison_RAG_vs_BaselineThreshold_{model_file}_{variant}.csv"
-    manual_path = Path(results_dir) / f"ManualValidationCandidates_{model_file}_{variant}.csv"
+    rag_metrics = Path(results_dir) / f"Metrics_RAG_{llm_file}_{model_file}_{variant}.csv"
+    comparison_path = Path(results_dir) / f"Comparison_RAG_{llm_file}_vs_BaselineThreshold_{model_file}_{variant}.csv"
+    manual_path = Path(results_dir) / f"ManualValidationCandidates_{llm_file}_{model_file}_{variant}.csv"
 
     before_df = evaluate_predictions(candidate_path, baseline_metrics, f"before_rag_threshold_{variant}")
-    after_df = evaluate_predictions(rag_path, rag_metrics, f"after_rag_{variant}")
+    after_df = evaluate_predictions(rag_path, rag_metrics, f"after_rag_{llm_file}_{variant}")
     compare_metrics(baseline_metrics, rag_metrics, comparison_path)
     export_new_links(rag_path, manual_path)
 
@@ -160,7 +160,7 @@ def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, r
     return before_df, after_df
 
 
-def summary_prf_from_attack_metrics(df, variant, model_name):
+def summary_prf_from_attack_metrics(df, variant, model_name, llm_model=None):
     has_prediction = df["prediction_count"] > 0
     has_truth = df["truth_count"] > 0
     tp = int((has_prediction & has_truth).sum())
@@ -174,13 +174,16 @@ def summary_prf_from_attack_metrics(df, variant, model_name):
         precision = tp / (tp + fp)
         recall = tp / (tp + fn)
         f1 = 0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
-    return {
+    row = {
         "Data": variant,
         "Model": model_name,
         "precision": precision,
         "Recall": recall,
         "F1": f1,
     }
+    if llm_model is not None:
+        row["LLM"] = llm_model
+    return row
 
 
 def run_variant_model(args, variant, model_name, data_cve, device):
@@ -251,24 +254,34 @@ def run_variant_model(args, variant, model_name, data_cve, device):
     }
 
     if args.skip_rag:
-        return threshold_summary, None, None, None
+        return threshold_summary, [], None, []
 
-    rag_path = Path(args.results_dir) / f"RAG_Predictions_{model_file}_{variant}.jsonl"
-    run_rag(
-        candidate_path,
-        rag_path,
-        args.base_url,
-        args.llm_model,
-        args.temperature,
-        args.top_p,
-        args.max_tokens,
-        args.api_key,
-    )
-    before_df, after_df = evaluate_candidate_files(args.results_dir, model_file, variant, candidate_path, rag_path)
+    before_df = None
+    rag_summaries = []
+    after_frames = []
+    for llm_model in args.llm_model:
+        llm_file = safe_name(llm_model)
+        rag_path = Path(args.results_dir) / f"RAG_Predictions_{llm_file}_{model_file}_{variant}.jsonl"
+        run_rag(
+            candidate_path,
+            rag_path,
+            args.base_url,
+            llm_model,
+            args.temperature,
+            args.top_p,
+            args.max_tokens,
+            args.api_key,
+        )
+        before_df, after_df = evaluate_candidate_files(args.results_dir, model_file, variant, candidate_path, rag_path, llm_file)
+        after_df.insert(0, "llm", llm_model)
+        after_df.insert(1, "model", model_name)
+        after_frames.append(after_df)
+        rag_summaries.append(summary_prf_from_attack_metrics(after_df, variant, model_name, llm_model))
+
+    if before_df is None:
+        return threshold_summary, rag_summaries, None, after_frames
     before_df.insert(0, "model", model_name)
-    after_df.insert(0, "model", model_name)
-    rag_summary = summary_prf_from_attack_metrics(after_df, variant, model_name)
-    return threshold_summary, rag_summary, before_df, after_df
+    return threshold_summary, rag_summaries, before_df, after_frames
 
 
 def main():
@@ -290,14 +303,12 @@ def main():
             raise ValueError(f"Unknown variant: {variant}")
         for model_name in args.models:
             print(f"Processing model: {model_name} with infodata: {variant}")
-            threshold_summary, rag_summary, before_df, after_df = run_variant_model(args, variant, model_name, data_cve, device)
+            threshold_summary, rag_summaries, before_df, after_frames = run_variant_model(args, variant, model_name, data_cve, device)
             threshold_rows.append(threshold_summary)
-            if rag_summary is not None:
-                rag_summary_rows.append(rag_summary)
+            rag_summary_rows.extend(rag_summaries)
             if before_df is not None:
                 before_rag_frames.append(before_df)
-            if after_df is not None:
-                after_rag_frames.append(after_df)
+            after_rag_frames.extend(after_frames)
 
     summary = pd.DataFrame(threshold_rows)
     summary_path = Path(args.results_dir) / "Summary_PRF_NoFineTuneThreshold.xlsx"
@@ -313,6 +324,9 @@ def main():
         rag_summary_path = Path(args.results_dir) / "Summary_PRF_After_RAG.xlsx"
         rag_summary.to_excel(rag_summary_path, index=False)
         print(f"Wrote {rag_summary_path}")
+        all_rag_summary_path = Path(args.results_dir) / "Summary_PRF_After_RAG_All_LLMs.xlsx"
+        rag_summary.to_excel(all_rag_summary_path, index=False)
+        print(f"Wrote {all_rag_summary_path}")
 
     if before_rag_frames:
         before_path = Path(args.results_dir) / "Performance_Before_RAG.csv"
@@ -321,8 +335,18 @@ def main():
 
     if after_rag_frames:
         after_path = Path(args.results_dir) / "Performance_After_RAG.csv"
-        pd.concat(after_rag_frames, ignore_index=True).to_csv(after_path, index=False)
+        after_all = pd.concat(after_rag_frames, ignore_index=True)
+        after_all.to_csv(after_path, index=False)
         print(f"Wrote {after_path}")
+        all_after_path = Path(args.results_dir) / "Performance_After_RAG_All_LLMs.csv"
+        after_all.to_csv(all_after_path, index=False)
+        print(f"Wrote {all_after_path}")
+        llm_comparison_path = Path(args.results_dir) / "LLM_RAG_Comparison.csv"
+        after_all.groupby("llm")[["precision", "recall", "f1", "jaccard", "mapping_accuracy", "detection_accuracy"]].mean().reset_index().to_csv(
+            llm_comparison_path,
+            index=False,
+        )
+        print(f"Wrote {llm_comparison_path}")
 
     print(f"Done. Results written to {args.results_dir}")
 

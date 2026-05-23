@@ -242,6 +242,24 @@ python VULDAT-RAG/run.py rag-auto \
 
 `rag-auto` prefers vLLM at `localhost:8000`; if that is unavailable, it tries Ollama at `localhost:11434`.
 
+### Other LLM Providers
+
+The RAG code also accepts provider-prefixed model names:
+
+```text
+ollama:llama3.1:8b
+lmstudio:local-model
+gemini:gemini-2.5-flash
+groq:MODEL_ID_FROM_GROQ
+openrouter:MODEL_ID_FROM_OPENROUTER
+huggingface:MODEL_ID_FROM_HUGGINGFACE
+mistral:MODEL_ID_FROM_MISTRAL
+openai:gpt-4o-mini
+anthropic:claude-3-5-sonnet-latest
+```
+
+Ollama and LM Studio can run locally without keys. Gemini, Groq, OpenRouter, Hugging Face, Mistral, OpenAI, and Anthropic require their matching API key in an environment variable.
+
 Evaluate RAG:
 
 ```bash
