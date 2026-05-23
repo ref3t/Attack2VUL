@@ -89,11 +89,17 @@ python main_no_finetune_rag.py \
   --llm-model meta-llama/Llama-3.1-8B-Instruct
 ```
 
-The RAG runner writes candidate files, comparison tables, threshold-based no-fine-tune results, and manual-validation candidate CSVs to `Results_NoFineTune_RAG/`. The two main performance files are:
+The RAG runner writes candidate files, comparison tables, threshold-based no-fine-tune results, and manual-validation candidate CSVs to `Results_NoFineTune_RAG/`. The before-RAG performance uses the similarity threshold. The RAG input is the same threshold-selected transformer output, and the after-RAG performance evaluates the LLM-filtered subset against the MITRE ground truth. The two main performance files are:
 
 ```text
 Results_NoFineTune_RAG/Performance_Before_RAG.csv
 Results_NoFineTune_RAG/Performance_After_RAG.csv
+```
+
+The default threshold is `0.58`. To change it:
+
+```bash
+python main_no_finetune_rag.py --models multi-qa-mpnet-base-dot-v1 --variants Technique --threshold 0.58
 ```
 
 ## References

@@ -29,8 +29,6 @@ def parse_args():
     parser.add_argument("--models", nargs="+", default=[SENTENCE_TRANSFORMERS_MODELS[0]])
     parser.add_argument("--variants", nargs="+", default=list(DATA_VARIANTS.keys()))
     parser.add_argument("--threshold", type=float, default=SIM_THRESHOLD)
-    parser.add_argument("--top-k", type=int, default=20)
-    parser.add_argument("--rank-limit", type=int, default=200)
     parser.add_argument("--base-url", default="http://localhost:11434/v1/chat/completions")
     parser.add_argument("--llm-model", default="llama3.1:8b")
     parser.add_argument("--temperature", type=float, default=0.0)
@@ -43,6 +41,10 @@ def parse_args():
 
 def safe_name(value):
     return value.replace("/", "_").replace(":", "_")
+
+
+def safe_threshold(value):
+    return str(value).replace(".", "_")
 
 
 def join_text(value):
@@ -132,6 +134,7 @@ def add_threshold_result(confusion, model_name, key, vul_data, cves_attack, cves
             else:
                 negatives.append(item.CVE_ID)
     confusion.add_attack_result(model_name, str(key), vul_data, cves_attack, positives, negatives, cves_not_attack)
+    return sorted(set(positives + negatives))
 
 
 def write_candidate_file(path, records):
@@ -140,12 +143,12 @@ def write_candidate_file(path, records):
 
 
 def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, rag_path):
-    baseline_metrics = Path(results_dir) / f"Metrics_BaselineTopK_{model_file}_{variant}.csv"
+    baseline_metrics = Path(results_dir) / f"Metrics_BaselineThreshold_{model_file}_{variant}.csv"
     rag_metrics = Path(results_dir) / f"Metrics_RAG_{model_file}_{variant}.csv"
-    comparison_path = Path(results_dir) / f"Comparison_RAG_vs_BaselineTopK_{model_file}_{variant}.csv"
+    comparison_path = Path(results_dir) / f"Comparison_RAG_vs_BaselineThreshold_{model_file}_{variant}.csv"
     manual_path = Path(results_dir) / f"ManualValidationCandidates_{model_file}_{variant}.csv"
 
-    before_df = evaluate_predictions(candidate_path, baseline_metrics, f"before_rag_{variant}")
+    before_df = evaluate_predictions(candidate_path, baseline_metrics, f"before_rag_threshold_{variant}")
     after_df = evaluate_predictions(rag_path, rag_metrics, f"after_rag_{variant}")
     compare_metrics(baseline_metrics, rag_metrics, comparison_path)
     export_new_links(rag_path, manual_path)
@@ -172,9 +175,18 @@ def run_variant_model(args, variant, model_name, data_cve, device):
         scores = cosine_similarity(attack_embedding.reshape(1, -1), embeddings)[0]
 
         all_candidates, all_vul_data = ranked_candidates(data_cve, scores, 0)
-        top_candidates = all_candidates[: args.top_k]
         cves_attack, cves_not_attack = attack_ground_truth(variant, key, data_cve)
-        add_threshold_result(confusion, model_name, key, all_vul_data, cves_attack, cves_not_attack, args.threshold)
+        threshold_cves = add_threshold_result(
+            confusion,
+            model_name,
+            key,
+            all_vul_data,
+            cves_attack,
+            cves_not_attack,
+            args.threshold,
+        )
+        threshold_set = set(threshold_cves)
+        threshold_candidates = [item for item in all_candidates if item["cve_id"] in threshold_set]
 
         candidate_records.append(
             {
@@ -183,12 +195,14 @@ def run_variant_model(args, variant, model_name, data_cve, device):
                 "attack_name": "",
                 "attack_text": attack_text(variant, value),
                 "ground_truth_cves": cves_attack,
-                "predicted_cves": [item["cve_id"] for item in top_candidates],
-                "candidates": top_candidates,
+                "predicted_cves": threshold_cves,
+                "threshold": args.threshold,
+                "candidate_source": "similarity_threshold",
+                "candidates": threshold_candidates,
             }
         )
 
-    candidate_path = Path(args.results_dir) / f"Candidates_Top{args.top_k}_{model_file}_{variant}.jsonl"
+    candidate_path = Path(args.results_dir) / f"Candidates_Threshold{safe_threshold(args.threshold)}_{model_file}_{variant}.jsonl"
     write_candidate_file(candidate_path, candidate_records)
 
     confusion.df_main.to_excel(

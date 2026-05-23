@@ -133,6 +133,15 @@ def run_rag(
     for record in tqdm(records, desc="RAG reranking"):
         prompt = render_prompt(record)
         candidate_ids = {str(item["cve_id"]) for item in record.get("candidates", [])}
+        if not candidate_ids:
+            outputs.append(
+                {
+                    **record,
+                    "decisions": [],
+                    "rag_linked_cves": [],
+                }
+            )
+            continue
         content = query_openai_compatible(base_url, model, prompt, temperature, top_p, max_tokens, api_key)
         try:
             decisions = _normalize_decisions(_extract_json_array(content), candidate_ids)
