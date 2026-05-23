@@ -47,6 +47,19 @@ Ensure the following libraries are installed:
   ```bash
   pip install -r requirements.txt
   python main.py #We will have for each model files for each attack type that contain all information
+  ```
+
+To run the same `src/` evaluation pipeline without fine-tuning the sentence transformer:
+
+```bash
+python main_no_finetune.py
+```
+
+For a smaller test run:
+
+```bash
+python main_no_finetune.py --models multi-qa-mpnet-base-dot-v1 --variants Technique
+```
 
 ## References
 
@@ -55,5 +68,3 @@ Here are some of the relevant papers related to this project:
 - [From attack descriptions to vulnerabilities: A sentence transformer-based approach](https://linkinghub.elsevier.com/retrieve/pii/S0164121225002845)
 - [Cybersecurity Defenses: Exploration of CVE Types through Attack Descriptions](https://ieeexplore.ieee.org/abstract/document/10803317)
 - [A Comparison of Vulnerability Feature Extraction Methods from Textual Attack Patterns](https://ieeexplore.ieee.org/abstract/document/10803510)
-
-
