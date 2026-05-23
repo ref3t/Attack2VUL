@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
+from requests import HTTPError
 from tqdm import tqdm
 
 from .io_utils import read_jsonl, write_jsonl
@@ -106,7 +107,13 @@ def query_openai_compatible(
         "max_tokens": max_tokens,
     }
     response = requests.post(base_url, headers=headers, json=payload, timeout=180)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except HTTPError as exc:
+        body = response.text.strip()
+        if len(body) > 2000:
+            body = body[:2000] + "..."
+        raise RuntimeError(f"LLM endpoint returned HTTP {response.status_code}: {body}") from exc
     body = response.json()
     return body["choices"][0]["message"]["content"]
 
@@ -175,4 +182,3 @@ def export_new_links(rag_predictions_path: Path, output_path: Path) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(output_path, index=False)
     return output_path
-
