@@ -8,6 +8,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 TOP_K="${TOP_K:-20}"
 RANK_LIMIT="${RANK_LIMIT:-200}"
 OUTPUT_DIR="${OUTPUT_DIR:-VULDAT-RAG/outputs}"
+CVE_TEXT_MODE="${CVE_TEXT_MODE:-description}"
 RUN_SENSITIVITY="${RUN_SENSITIVITY:-1}"
 RUN_RAG="${RUN_RAG:-1}"
 RAG_BACKEND="${RAG_BACKEND:-ollama}"
@@ -18,10 +19,16 @@ VLLM_BASE_URL="${VLLM_BASE_URL:-http://localhost:8000/v1/chat/completions}"
 START_OLLAMA="${START_OLLAMA:-1}"
 PULL_OLLAMA_MODEL="${PULL_OLLAMA_MODEL:-0}"
 
-BASELINE_FILE="$OUTPUT_DIR/baseline_top${TOP_K}.jsonl"
-BASELINE_METRICS="$OUTPUT_DIR/metrics_baseline.csv"
-RAG_FILE="$OUTPUT_DIR/rag_predictions.jsonl"
-RAG_METRICS="$OUTPUT_DIR/metrics_rag.csv"
+if [[ "$CVE_TEXT_MODE" == "description" ]]; then
+  FILE_SUFFIX=""
+else
+  FILE_SUFFIX="_$CVE_TEXT_MODE"
+fi
+
+BASELINE_FILE="$OUTPUT_DIR/baseline_top${TOP_K}${FILE_SUFFIX}.jsonl"
+BASELINE_METRICS="$OUTPUT_DIR/metrics_baseline${FILE_SUFFIX}.csv"
+RAG_FILE="$OUTPUT_DIR/rag_predictions${FILE_SUFFIX}.jsonl"
+RAG_METRICS="$OUTPUT_DIR/metrics_rag${FILE_SUFFIX}.csv"
 
 run_step() {
   printf '\nStep: %s\n' "$1"
@@ -68,11 +75,13 @@ run_step "Environment doctor"
 "$PYTHON_BIN" VULDAT-RAG/run.py doctor || true
 
 run_step "Build annotated dataset"
-"$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" build-dataset
+"$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" build-dataset \
+  --cve-text-mode "$CVE_TEXT_MODE"
 
 run_step "Frozen MPNet retrieval"
 "$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" retrieve \
   --device auto \
+  --cve-text-mode "$CVE_TEXT_MODE" \
   --top-k "$TOP_K" \
   --rank-limit "$RANK_LIMIT" \
   --reuse-cve-embeddings
@@ -86,7 +95,7 @@ run_step "Evaluate baseline"
 if [[ "$RUN_SENSITIVITY" == "1" ]]; then
   run_step "Top-k sensitivity"
   "$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" sensitivity \
-    --rankings "$OUTPUT_DIR/rankings.jsonl"
+    --rankings "$OUTPUT_DIR/rankings${FILE_SUFFIX}.jsonl"
 fi
 
 if [[ "$RUN_RAG" == "1" ]]; then
@@ -123,12 +132,12 @@ if [[ "$RUN_RAG" == "1" ]]; then
   "$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" compare \
     --baseline "$BASELINE_METRICS" \
     --rag "$RAG_METRICS" \
-    --output "$OUTPUT_DIR/comparison.csv"
+    --output "$OUTPUT_DIR/comparison${FILE_SUFFIX}.csv"
 
   run_step "Export manual-validation candidates"
   "$PYTHON_BIN" VULDAT-RAG/run.py --output-dir "$OUTPUT_DIR" export-new-links \
     --rag "$RAG_FILE" \
-    --output "$OUTPUT_DIR/manual_validation_candidates.csv"
+    --output "$OUTPUT_DIR/manual_validation_candidates${FILE_SUFFIX}.csv"
 fi
 
 printf '\nDone. Outputs are in %s\n' "$OUTPUT_DIR"

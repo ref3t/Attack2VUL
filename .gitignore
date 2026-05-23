@@ -1,0 +1,12 @@
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+
+VULDAT-RAG/outputs/
+
+~$*
+*.tmp
+.DS_Store

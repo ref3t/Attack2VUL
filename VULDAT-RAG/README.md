@@ -68,6 +68,7 @@ Useful options:
 RUN_RAG=0 bash VULDAT-RAG/run_all.sh
 RUN_SENSITIVITY=0 bash VULDAT-RAG/run_all.sh
 TOP_K=50 RANK_LIMIT=200 bash VULDAT-RAG/run_all.sh
+CVE_TEXT_MODE=description_technique RUN_RAG=0 bash VULDAT-RAG/run_all.sh
 PULL_OLLAMA_MODEL=1 bash VULDAT-RAG/run_all.sh
 RAG_BACKEND=vllm bash VULDAT-RAG/run_all.sh
 ```
@@ -101,6 +102,41 @@ Run the sensitivity analysis for `k in {10,20,30,40,50,100,150,200}`:
 ```bash
 python VULDAT-RAG/run.py sensitivity
 ```
+
+## Technique-Name CVE Text Experiment
+
+This experiment embeds each CVE as:
+
+```text
+CVE description + related TechniqueName values
+```
+
+Run retrieval with this CVE text mode:
+
+```bash
+python VULDAT-RAG/run.py retrieve \
+  --device auto \
+  --cve-text-mode description_technique \
+  --top-k 20 \
+  --rank-limit 200
+```
+
+Evaluate the result:
+
+```bash
+python VULDAT-RAG/run.py evaluate \
+  --predictions VULDAT-RAG/outputs/baseline_top20_description_technique.jsonl \
+  --name baseline_description_technique \
+  --output VULDAT-RAG/outputs/metrics_baseline_description_technique.csv
+```
+
+Or run the experiment in one command:
+
+```bash
+CVE_TEXT_MODE=description_technique RUN_RAG=0 bash VULDAT-RAG/run_all.sh
+```
+
+This is an oracle-enriched ablation because the related technique names come from the existing MITRE-derived mapping.
 
 ## RAG Reranking
 

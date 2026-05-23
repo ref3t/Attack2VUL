@@ -64,6 +64,7 @@ def retrieve(
     top_k: int,
     rank_limit: int,
     batch_size: int = 32,
+    output_suffix: str = "",
 ) -> tuple[Path, Path]:
     attacks = read_jsonl(annotated_path)
     texts = [row["clean_attack_text"] for row in attacks]
@@ -100,8 +101,9 @@ def retrieve(
         rankings.append({**base, "candidates": candidates})
         top_predictions.append({**base, "predicted_cves": [item["cve_id"] for item in top_candidates], "candidates": top_candidates})
 
-    rankings_path = output_dir / "rankings.jsonl"
-    top_path = output_dir / f"baseline_top{top_k}.jsonl"
+    suffix = f"_{output_suffix}" if output_suffix else ""
+    rankings_path = output_dir / f"rankings{suffix}.jsonl"
+    top_path = output_dir / f"baseline_top{top_k}{suffix}.jsonl"
     write_jsonl(rankings_path, rankings)
     write_jsonl(top_path, top_predictions)
     return rankings_path, top_path

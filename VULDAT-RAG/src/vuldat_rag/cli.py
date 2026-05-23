@@ -27,10 +27,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     build = sub.add_parser("build-dataset", help="Build annotated attacks and CVE corpus from existing Excel files.")
     build.add_argument("--mapping-file", type=_path, default=None, help="Override dataset/VULDATDataSet.xlsx.")
+    build.add_argument("--cve-text-mode", choices=["description", "description_technique"], default="description")
 
     ret = sub.add_parser("retrieve", help="Encode with frozen MPNet and produce rankings/top-k predictions.")
     ret.add_argument("--model-name", default=DEFAULT_MODEL_NAME)
     ret.add_argument("--device", default="auto", help="SentenceTransformer device: auto, cpu, cuda, or mps.")
+    ret.add_argument("--cve-text-mode", choices=["description", "description_technique"], default="description")
     ret.add_argument("--top-k", type=int, default=DEFAULT_TOP_K)
     ret.add_argument("--rank-limit", type=int, default=DEFAULT_RANK_LIMIT, help="0 means keep all CVEs per attack.")
     ret.add_argument("--batch-size", type=int, default=64)
@@ -98,26 +100,28 @@ def main() -> None:
     if args.command == "build-dataset":
         from .data import write_annotated_outputs
 
-        annotated_path, cve_path = write_annotated_outputs(dataset_config, output_dir)
+        annotated_path, cve_path = write_annotated_outputs(dataset_config, output_dir, args.cve_text_mode)
         print(f"Wrote {annotated_path}")
         print(f"Wrote {cve_path}")
         return
 
     if args.command == "retrieve":
-        from .data import write_annotated_outputs
+        from .data import cve_corpus_path, write_annotated_outputs
         from .retriever import encode_cve_corpus, load_cached_cve_embeddings, load_model, retrieve
 
         annotated_path = output_dir / "annotated_attacks.jsonl"
-        cve_path = output_dir / "cve_corpus.csv"
+        cve_path = cve_corpus_path(output_dir, args.cve_text_mode)
         if args.rebuild_dataset or not annotated_path.exists() or not cve_path.exists():
-            annotated_path, cve_path = write_annotated_outputs(dataset_config, output_dir)
+            annotated_path, cve_path = write_annotated_outputs(dataset_config, output_dir, args.cve_text_mode)
 
         model = load_model(args.model_name, args.device)
-        emb_dir = output_dir / "embeddings"
+        emb_dir = output_dir / "embeddings" / args.cve_text_mode
         if args.reuse_cve_embeddings and (emb_dir / "cve_embeddings.npy").exists() and (emb_dir / "cve_corpus.csv").exists():
             cve_df, cve_embeddings = load_cached_cve_embeddings(emb_dir)
         else:
             cve_df, cve_embeddings = encode_cve_corpus(model, cve_path, emb_dir, args.batch_size)
+
+        output_suffix = "" if args.cve_text_mode == "description" else args.cve_text_mode
 
         rankings_path, top_path = retrieve(
             model,
@@ -128,6 +132,7 @@ def main() -> None:
             args.top_k,
             args.rank_limit,
             args.batch_size,
+            output_suffix,
         )
         print(f"Wrote {rankings_path}")
         print(f"Wrote {top_path}")
