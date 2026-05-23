@@ -89,7 +89,12 @@ python main_no_finetune_rag.py \
   --llm-model meta-llama/Llama-3.1-8B-Instruct
 ```
 
-The RAG runner writes candidate files, baseline top-k metrics, RAG metrics, comparison tables, threshold-based no-fine-tune results, and manual-validation candidate CSVs to `Results_NoFineTune_RAG/`.
+The RAG runner writes candidate files, comparison tables, threshold-based no-fine-tune results, and manual-validation candidate CSVs to `Results_NoFineTune_RAG/`. The two main performance files are:
+
+```text
+Results_NoFineTune_RAG/Performance_Before_RAG.csv
+Results_NoFineTune_RAG/Performance_After_RAG.csv
+```
 
 ## References
 

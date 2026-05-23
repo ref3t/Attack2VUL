@@ -145,8 +145,8 @@ def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, r
     comparison_path = Path(results_dir) / f"Comparison_RAG_vs_BaselineTopK_{model_file}_{variant}.csv"
     manual_path = Path(results_dir) / f"ManualValidationCandidates_{model_file}_{variant}.csv"
 
-    evaluate_predictions(candidate_path, baseline_metrics, f"baseline_topk_{variant}")
-    evaluate_predictions(rag_path, rag_metrics, f"rag_{variant}")
+    before_df = evaluate_predictions(candidate_path, baseline_metrics, f"before_rag_{variant}")
+    after_df = evaluate_predictions(rag_path, rag_metrics, f"after_rag_{variant}")
     compare_metrics(baseline_metrics, rag_metrics, comparison_path)
     export_new_links(rag_path, manual_path)
 
@@ -154,6 +154,7 @@ def evaluate_candidate_files(results_dir, model_file, variant, candidate_path, r
     print(f"Wrote {rag_metrics}")
     print(f"Wrote {comparison_path}")
     print(f"Wrote {manual_path}")
+    return before_df, after_df
 
 
 def run_variant_model(args, variant, model_name, data_cve, device):
@@ -213,7 +214,7 @@ def run_variant_model(args, variant, model_name, data_cve, device):
     }
 
     if args.skip_rag:
-        return threshold_summary
+        return threshold_summary, None, None
 
     rag_path = Path(args.results_dir) / f"RAG_Predictions_{model_file}_{variant}.jsonl"
     run_rag(
@@ -226,8 +227,10 @@ def run_variant_model(args, variant, model_name, data_cve, device):
         args.max_tokens,
         args.api_key,
     )
-    evaluate_candidate_files(args.results_dir, model_file, variant, candidate_path, rag_path)
-    return threshold_summary
+    before_df, after_df = evaluate_candidate_files(args.results_dir, model_file, variant, candidate_path, rag_path)
+    before_df.insert(0, "model", model_name)
+    after_df.insert(0, "model", model_name)
+    return threshold_summary, before_df, after_df
 
 
 def main():
@@ -240,18 +243,36 @@ def main():
 
     data_cve = read_cve_corpus(CVE_CORPUS_XLSX)
     threshold_rows = []
+    before_rag_frames = []
+    after_rag_frames = []
 
     for variant in args.variants:
         if variant not in DATA_VARIANTS:
             raise ValueError(f"Unknown variant: {variant}")
         for model_name in args.models:
             print(f"Processing model: {model_name} with infodata: {variant}")
-            threshold_rows.append(run_variant_model(args, variant, model_name, data_cve, device))
+            threshold_summary, before_df, after_df = run_variant_model(args, variant, model_name, data_cve, device)
+            threshold_rows.append(threshold_summary)
+            if before_df is not None:
+                before_rag_frames.append(before_df)
+            if after_df is not None:
+                after_rag_frames.append(after_df)
 
     summary = pd.DataFrame(threshold_rows)
     summary_path = Path(args.results_dir) / "Summary_PRF_NoFineTuneThreshold.xlsx"
     summary.to_excel(summary_path, index=False)
     print(f"Wrote {summary_path}")
+
+    if before_rag_frames:
+        before_path = Path(args.results_dir) / "Performance_Before_RAG.csv"
+        pd.concat(before_rag_frames, ignore_index=True).to_csv(before_path, index=False)
+        print(f"Wrote {before_path}")
+
+    if after_rag_frames:
+        after_path = Path(args.results_dir) / "Performance_After_RAG.csv"
+        pd.concat(after_rag_frames, ignore_index=True).to_csv(after_path, index=False)
+        print(f"Wrote {after_path}")
+
     print(f"Done. Results written to {args.results_dir}")
 
 
