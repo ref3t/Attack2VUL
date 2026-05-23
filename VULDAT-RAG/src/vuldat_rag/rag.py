@@ -56,16 +56,30 @@ def _extract_json_array(text: str) -> list[dict[str, Any]]:
     if stripped.startswith("```"):
         stripped = re.sub(r"^```(?:json)?\s*", "", stripped)
         stripped = re.sub(r"\s*```$", "", stripped)
-    try:
-        data = json.loads(stripped)
-    except json.JSONDecodeError:
-        match = re.search(r"\[[\s\S]*\]", stripped)
-        if not match:
-            raise
+    decoder = json.JSONDecoder()
+    errors = []
+    starts = [0] + [match.start() for match in re.finditer(r"\[", stripped)]
+    for start in starts:
+        candidate = stripped[start:].strip()
+        try:
+            data, _ = decoder.raw_decode(candidate)
+        except json.JSONDecodeError as exc:
+            errors.append(exc)
+            continue
+        if isinstance(data, dict):
+            for key in ("decisions", "results", "cves"):
+                if isinstance(data.get(key), list):
+                    return data[key]
+        if isinstance(data, list):
+            return data
+    match = re.search(r"\[[\s\S]*?\]", stripped)
+    if match:
         data = json.loads(match.group(0))
-    if not isinstance(data, list):
-        raise ValueError("LLM response must be a JSON array.")
-    return data
+        if isinstance(data, list):
+            return data
+    if errors:
+        raise errors[-1]
+    raise ValueError("LLM response must contain a JSON array.")
 
 
 def _normalize_decisions(data: list[dict[str, Any]], candidate_ids: set[str]) -> list[dict[str, str]]:
@@ -128,9 +142,13 @@ def run_rag(
     max_tokens: int = 1024,
     api_key: str | None = None,
 ) -> Path:
-    outputs = []
+    outputs = read_jsonl(output_path) if output_path.exists() else []
+    done = {(item.get("attack_type"), item.get("attack_id")) for item in outputs}
     records = read_jsonl(candidates_path)
     for record in tqdm(records, desc="RAG reranking"):
+        key = (record.get("attack_type"), record.get("attack_id"))
+        if key in done:
+            continue
         prompt = render_prompt(record)
         candidate_ids = {str(item["cve_id"]) for item in record.get("candidates", [])}
         if not candidate_ids:
@@ -141,6 +159,8 @@ def run_rag(
                     "rag_linked_cves": [],
                 }
             )
+            done.add(key)
+            write_jsonl(output_path, outputs)
             continue
         content = query_openai_compatible(base_url, model, prompt, temperature, top_p, max_tokens, api_key)
         try:
@@ -148,7 +168,22 @@ def run_rag(
         except Exception as exc:
             retry_prompt = prompt + f"\n\nYour previous response could not be parsed: {exc}. Return only the JSON array."
             content = query_openai_compatible(base_url, model, retry_prompt, temperature, top_p, max_tokens, api_key)
-            decisions = _normalize_decisions(_extract_json_array(content), candidate_ids)
+            try:
+                decisions = _normalize_decisions(_extract_json_array(content), candidate_ids)
+            except Exception as retry_exc:
+                decisions = [{"cve_id": cve_id, "decision": "not_linked"} for cve_id in sorted(candidate_ids)]
+                outputs.append(
+                    {
+                        **record,
+                        "decisions": decisions,
+                        "rag_linked_cves": [],
+                        "parse_error": str(retry_exc),
+                        "raw_llm_response": content[:2000],
+                    }
+                )
+                done.add(key)
+                write_jsonl(output_path, outputs)
+                continue
 
         linked = [item["cve_id"] for item in decisions if item["decision"] == "linked"]
         outputs.append(
@@ -158,6 +193,8 @@ def run_rag(
                 "rag_linked_cves": linked,
             }
         )
+        done.add(key)
+        write_jsonl(output_path, outputs)
 
     write_jsonl(output_path, outputs)
     return output_path
