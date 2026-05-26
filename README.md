@@ -117,7 +117,6 @@ Free-tier providers still require a free API key. Use the provider prefix and se
 
 ```bash
 export GEMINI_API_KEY=your_key
-export GROQ_API_KEY=your_key
 export OPENROUTER_API_KEY=your_key
 export HF_TOKEN=your_key
 export MISTRAL_API_KEY=your_key
@@ -127,7 +126,6 @@ python main_no_finetune_rag.py \
   --variants Technique \
   --llm-model \
     gemini:gemini-2.5-flash \
-    groq:MODEL_ID_FROM_GROQ \
     openrouter:MODEL_ID_FROM_OPENROUTER \
     huggingface:MODEL_ID_FROM_HUGGINGFACE \
     mistral:MODEL_ID_FROM_MISTRAL
@@ -182,6 +180,54 @@ The default threshold is `0.58`. To change it:
 
 ```bash
 python main_no_finetune_rag.py --models multi-qa-mpnet-base-dot-v1 --variants Technique --threshold 0.58
+```
+
+To run the separate hybrid MITRE-grounded CVE prediction RAG pipeline:
+
+```bash
+python mitre_cve_rag.py --variant Technique --top-k 20 --top-n 10
+```
+
+This script builds one searchable document per CVE, combines dense retrieval, BM25, and metadata matching, then writes retrieval and prediction metrics:
+
+```text
+Results_MITRE_CVE_RAG/retrieval_candidates.jsonl
+Results_MITRE_CVE_RAG/predictions.jsonl
+Results_MITRE_CVE_RAG/retrieval_metrics.csv
+Results_MITRE_CVE_RAG/retrieval_metrics_summary.csv
+Results_MITRE_CVE_RAG/prediction_metrics.csv
+Results_MITRE_CVE_RAG/prediction_metrics_summary.csv
+Results_MITRE_CVE_RAG/manual_validation_candidates.csv
+```
+
+With a local LLM:
+
+```bash
+ollama pull llama3.1:8b
+python mitre_cve_rag.py \
+  --variant Technique \
+  --top-k 20 \
+  --top-n 10 \
+  --llm-model ollama:llama3.1:8b
+```
+
+For one custom attack description:
+
+```bash
+python mitre_cve_rag.py \
+  --query "The attacker exploited a remote code execution bug in Apache Log4j through JNDI lookup injection." \
+  --top-k 20 \
+  --llm-model ollama:llama3.1:8b
+```
+
+If you have a local checkout of `cvelistV5`, use it as the CVE knowledge base:
+
+```bash
+python mitre_cve_rag.py \
+  --cve-source cvelist \
+  --cve-json-root /path/to/cvelistV5/cves \
+  --variant Technique \
+  --top-k 20
 ```
 
 ## References

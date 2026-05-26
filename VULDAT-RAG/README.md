@@ -250,7 +250,6 @@ The RAG code also accepts provider-prefixed model names:
 ollama:llama3.1:8b
 lmstudio:local-model
 gemini:gemini-2.5-flash
-groq:MODEL_ID_FROM_GROQ
 openrouter:MODEL_ID_FROM_OPENROUTER
 huggingface:MODEL_ID_FROM_HUGGINGFACE
 mistral:MODEL_ID_FROM_MISTRAL

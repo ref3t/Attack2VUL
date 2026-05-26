@@ -8,6 +8,7 @@ __pycache__/
 VULDAT-RAG/outputs/
 Results_NoFineTune/
 Results_NoFineTune_RAG/
+Results_MITRE_CVE_RAG/
 
 ~$*
 *.tmp
